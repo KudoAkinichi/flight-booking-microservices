@@ -15,6 +15,7 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -110,5 +111,45 @@ public class FlightServiceImpl implements FlightService {
                 .availableSeats(flight.getAvailableSeats())
                 .aircraftType(flight.getAircraftType())
                 .build();
+    }
+
+    @Override
+    public Mono<Void> reserveSeats(String flightId, List<String> seatNumbers) {
+        return flightRepository.findById(flightId)
+                .flatMap(flight -> {
+                    // Mark seats as unavailable
+                    flight.getSeats().forEach(seat -> {
+                        if (seatNumbers.contains(seat.getSeatNumber())) {
+                            seat.setIsAvailable(false);
+                        }
+                    });
+
+                    // Update available seats count
+                    flight.setAvailableSeats(flight.getAvailableSeats() - seatNumbers.size());
+                    flight.setUpdatedAt(DateTimeUtil.getCurrentTimestamp());
+
+                    return flightRepository.save(flight);
+                })
+                .then();
+    }
+
+    @Override
+    public Mono<Void> releaseSeats(String flightId, List<String> seatNumbers) {
+        return flightRepository.findById(flightId)
+                .flatMap(flight -> {
+                    // Mark seats as available
+                    flight.getSeats().forEach(seat -> {
+                        if (seatNumbers.contains(seat.getSeatNumber())) {
+                            seat.setIsAvailable(true);
+                        }
+                    });
+
+                    // Update available seats count
+                    flight.setAvailableSeats(flight.getAvailableSeats() + seatNumbers.size());
+                    flight.setUpdatedAt(DateTimeUtil.getCurrentTimestamp());
+
+                    return flightRepository.save(flight);
+                })
+                .then();
     }
 }

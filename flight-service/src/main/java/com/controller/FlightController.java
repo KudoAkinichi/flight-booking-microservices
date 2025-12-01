@@ -72,4 +72,36 @@ public class FlightController {
                         ApiResponse.success("Seat map retrieved successfully", flight.getSeats())
                 ));
     }
+
+    @PutMapping("/{flightId}/seats/reserve")
+    public Mono<ResponseEntity<ApiResponse<Void>>> reserveSeats(
+            @PathVariable String flightId,
+            @RequestBody List<String> seatNumbers) {
+
+        log.info("Reserving seats {} for flight {}", seatNumbers, flightId);
+
+        return flightService.reserveSeats(flightId, seatNumbers)
+                .then(Mono.just(ResponseEntity.ok(
+                        ApiResponse.<Void>builder()
+                                .success(true)
+                                .message("Seats reserved successfully")
+                                .build()
+                )));
+    }
+
+    @PutMapping("/{flightId}/seats/release")
+    public Mono<ResponseEntity<ApiResponse<Void>>> releaseSeats(
+            @PathVariable String flightId,
+            @RequestBody List<String> seatNumbers) {
+
+        log.info("Releasing seats {} for flight {}", seatNumbers, flightId);
+
+        return flightService.releaseSeats(flightId, seatNumbers)
+                .then(Mono.just(ResponseEntity.ok(
+                        ApiResponse.<Void>builder()
+                                .success(true)
+                                .message("Seats released successfully")
+                                .build()
+                )));
+    }
 }

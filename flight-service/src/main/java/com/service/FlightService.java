@@ -6,9 +6,13 @@ import com.model.Flight;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+import java.util.List;
+
 public interface FlightService {
     Flux<FlightSearchResponse> searchFlights(FlightSearchRequest request);
     Mono<Flight> getFlightById(String flightId);
     Mono<Flight> saveFlight(Flight flight);
     Mono<Flight> updateFlightSeats(String flightId, int seatsToBook);
+    Mono<Void> reserveSeats(String flightId, List<String> seatNumbers);
+    Mono<Void> releaseSeats(String flightId, List<String> seatNumbers);
 }

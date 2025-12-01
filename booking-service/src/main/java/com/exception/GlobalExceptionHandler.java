@@ -187,9 +187,23 @@ public class GlobalExceptionHandler {
                 .path(exchange.getRequest().getPath().value())
                 .build();
 
-        // Log the full exception for debugging
-        ex.printStackTrace();
 
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(error);
+    }
+
+    @ExceptionHandler(ServiceUnavailableException.class)
+    public ResponseEntity<ErrorResponse> handleServiceUnavailable(
+            ServiceUnavailableException ex,
+            ServerWebExchange exchange) {
+
+        ErrorResponse error = ErrorResponse.builder()
+                .success(false)
+                .error("Service Unavailable")
+                .message(ex.getMessage())
+                .status(HttpStatus.SERVICE_UNAVAILABLE.value())
+                .path(exchange.getRequest().getPath().value())
+                .build();
+
+        return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE).body(error);
     }
 }

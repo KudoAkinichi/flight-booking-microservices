@@ -1,6 +1,7 @@
 package com.validator;
 
 import com.dto.request.FlightSearchRequest;
+import com.exception.InvalidRequestException;
 import com.util.Constants;
 import org.springframework.stereotype.Component;
 

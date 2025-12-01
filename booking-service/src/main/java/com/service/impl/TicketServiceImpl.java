@@ -7,7 +7,6 @@ import com.model.Flight;
 import com.repository.BookingRepository;
 import com.repository.FlightRepository;
 import com.service.TicketService;
-import com.util.FlightBookingMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -67,8 +66,6 @@ public class TicketServiceImpl implements TicketService {
      * Build TicketResponse from Booking and Flight
      */
     private TicketResponse buildTicketResponse(Booking booking, Flight flight) {
-        FlightDetails flightDetails = FlightBookingMapper.mapFlightDetails(flight);
-        BookingDetails bookingDetails = FlightBookingMapper.mapBookingDetails(booking);
 
         List<PassengerInfo> passengers = booking.getPassengers().stream()
                 .map(p -> PassengerInfo.builder()
@@ -96,8 +93,6 @@ public class TicketServiceImpl implements TicketService {
                 .pnr(booking.getPnr())
                 .bookingId(booking.getId())
                 .status(booking.getStatus())
-                .flightDetails(flightDetails)
-                .bookingDetails(bookingDetails)
                 .passengers(passengers)
                 .fareBreakdown(fareBreakdown)
                 .build();

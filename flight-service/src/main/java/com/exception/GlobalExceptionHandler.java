@@ -31,54 +31,6 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(error);
     }
 
-    @ExceptionHandler(BookingNotFoundException.class)
-    public ResponseEntity<ErrorResponse> handleBookingNotFound(
-            BookingNotFoundException ex,
-            ServerWebExchange exchange) {
-
-        ErrorResponse error = ErrorResponse.builder()
-                .success(false)
-                .error("Booking Not Found")
-                .message(ex.getMessage())
-                .status(HttpStatus.NOT_FOUND.value())
-                .path(exchange.getRequest().getPath().value())
-                .build();
-
-        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(error);
-    }
-
-    @ExceptionHandler(SeatUnavailableException.class)
-    public ResponseEntity<ErrorResponse> handleSeatUnavailable(
-            SeatUnavailableException ex,
-            ServerWebExchange exchange) {
-
-        ErrorResponse error = ErrorResponse.builder()
-                .success(false)
-                .error("Seat Unavailable")
-                .message(ex.getMessage())
-                .status(HttpStatus.CONFLICT.value())
-                .path(exchange.getRequest().getPath().value())
-                .build();
-
-        return ResponseEntity.status(HttpStatus.CONFLICT).body(error);
-    }
-
-    @ExceptionHandler(InvalidCancellationException.class)
-    public ResponseEntity<ErrorResponse> handleInvalidCancellation(
-            InvalidCancellationException ex,
-            ServerWebExchange exchange) {
-
-        ErrorResponse error = ErrorResponse.builder()
-                .success(false)
-                .error("Invalid Cancellation")
-                .message(ex.getMessage())
-                .status(HttpStatus.BAD_REQUEST.value())
-                .path(exchange.getRequest().getPath().value())
-                .build();
-
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error);
-    }
-
     @ExceptionHandler(DuplicateResourceException.class)
     public ResponseEntity<ErrorResponse> handleDuplicateResource(
             DuplicateResourceException ex,
@@ -93,22 +45,6 @@ public class GlobalExceptionHandler {
                 .build();
 
         return ResponseEntity.status(HttpStatus.CONFLICT).body(error);
-    }
-
-    @ExceptionHandler(InvalidRequestException.class)
-    public ResponseEntity<ErrorResponse> handleInvalidRequest(
-            InvalidRequestException ex,
-            ServerWebExchange exchange) {
-
-        ErrorResponse error = ErrorResponse.builder()
-                .success(false)
-                .error("Invalid Request")
-                .message(ex.getMessage())
-                .status(HttpStatus.BAD_REQUEST.value())
-                .path(exchange.getRequest().getPath().value())
-                .build();
-
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error);
     }
 
     @ExceptionHandler(AirlineNotFoundException.class)
@@ -187,8 +123,6 @@ public class GlobalExceptionHandler {
                 .path(exchange.getRequest().getPath().value())
                 .build();
 
-        // Log the full exception for debugging
-        ex.printStackTrace();
 
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(error);
     }

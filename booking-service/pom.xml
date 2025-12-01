@@ -14,6 +14,11 @@
     <artifactId>booking-service</artifactId>
     <name>Booking Service</name>
 
+    <properties>
+        <!-- ensure consistent Java version (you said you use Java 21) -->
+        <java.version>21</java.version>
+    </properties>
+
     <dependencies>
         <!-- Spring WebFlux -->
         <dependency>
@@ -45,17 +50,35 @@
             <artifactId>spring-cloud-starter-config</artifactId>
         </dependency>
 
-        <!-- OpenFeign for Reactive -->
-        <dependency>
-            <groupId>org.springframework.cloud</groupId>
-            <artifactId>spring-cloud-starter-openfeign</artifactId>
-        </dependency>
+        <!-- https://mvnrepository.com/artifact/com.playtika.reactivefeign/feign-reactor-core -->
         <dependency>
             <groupId>com.playtika.reactivefeign</groupId>
-            <artifactId>feign-reactor-spring-cloud-starter</artifactId>
-            <version>3.2.5</version>
+            <artifactId>feign-reactor-core</artifactId>
+            <version>4.2.1</version>
+        </dependency>
+        <!-- https://mvnrepository.com/artifact/com.jardoapps.reactivefeign/feign-reactor-core -->
+        <dependency>
+            <groupId>com.jardoapps.reactivefeign</groupId>
+            <artifactId>feign-reactor-core</artifactId>
+            <version>4.1.0</version>
+        </dependency>
+        <!-- https://mvnrepository.com/artifact/com.jardoapps.reactivefeign/feign-reactor-webclient -->
+        <dependency>
+            <groupId>com.jardoapps.reactivefeign</groupId>
+            <artifactId>feign-reactor-webclient</artifactId>
+            <version>4.1.0</version>
+        </dependency>
+        <!-- https://mvnrepository.com/artifact/com.playtika.reactivefeign/feign-reactor-spring-configuration -->
+        <dependency>
+            <groupId>com.playtika.reactivefeign</groupId>
+            <artifactId>feign-reactor-spring-configuration</artifactId>
+            <version>4.2.1</version>
         </dependency>
 
+        <dependency>
+            <groupId>org.springframework.cloud</groupId>
+            <artifactId>spring-cloud-openfeign-core</artifactId>
+        </dependency>
         <!-- Circuit Breaker -->
         <dependency>
             <groupId>org.springframework.cloud</groupId>
@@ -69,10 +92,12 @@
         </dependency>
 
         <!-- Lombok -->
+        <!-- Lombok -->
         <dependency>
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
-            <optional>true</optional>
+            <version>1.18.38</version>
+            <scope>provided</scope>
         </dependency>
 
         <!-- Actuator -->
@@ -93,11 +118,12 @@
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>com.flightapp</groupId>
-            <artifactId>flight-service</artifactId>
-            <version>1.0.0</version>
+            <groupId>io.swagger.core.v3</groupId>
+            <artifactId>swagger-annotations-jakarta</artifactId>
+            <version>2.2.21</version>
             <scope>compile</scope>
         </dependency>
+
     </dependencies>
 
     <build>

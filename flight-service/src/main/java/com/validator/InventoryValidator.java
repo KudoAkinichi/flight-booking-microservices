@@ -1,6 +1,7 @@
 package com.validator;
 
 import com.dto.request.InventoryRequest;
+import com.exception.InvalidRequestException;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDateTime;

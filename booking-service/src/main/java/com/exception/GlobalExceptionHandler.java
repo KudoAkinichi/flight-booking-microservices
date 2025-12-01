@@ -79,21 +79,6 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error);
     }
 
-    @ExceptionHandler(DuplicateResourceException.class)
-    public ResponseEntity<ErrorResponse> handleDuplicateResource(
-            DuplicateResourceException ex,
-            ServerWebExchange exchange) {
-
-        ErrorResponse error = ErrorResponse.builder()
-                .success(false)
-                .error("Duplicate Resource")
-                .message(ex.getMessage())
-                .status(HttpStatus.CONFLICT.value())
-                .path(exchange.getRequest().getPath().value())
-                .build();
-
-        return ResponseEntity.status(HttpStatus.CONFLICT).body(error);
-    }
 
     @ExceptionHandler(InvalidRequestException.class)
     public ResponseEntity<ErrorResponse> handleInvalidRequest(
@@ -111,37 +96,6 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error);
     }
 
-    @ExceptionHandler(AirlineNotFoundException.class)
-    public ResponseEntity<ErrorResponse> handleAirlineNotFound(
-            AirlineNotFoundException ex,
-            ServerWebExchange exchange) {
-
-        ErrorResponse error = ErrorResponse.builder()
-                .success(false)
-                .error("Airline Not Found")
-                .message(ex.getMessage())
-                .status(HttpStatus.NOT_FOUND.value())
-                .path(exchange.getRequest().getPath().value())
-                .build();
-
-        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(error);
-    }
-
-    @ExceptionHandler(AirportNotFoundException.class)
-    public ResponseEntity<ErrorResponse> handleAirportNotFound(
-            AirportNotFoundException ex,
-            ServerWebExchange exchange) {
-
-        ErrorResponse error = ErrorResponse.builder()
-                .success(false)
-                .error("Airport Not Found")
-                .message(ex.getMessage())
-                .status(HttpStatus.NOT_FOUND.value())
-                .path(exchange.getRequest().getPath().value())
-                .build();
-
-        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(error);
-    }
 
     @ExceptionHandler(WebExchangeBindException.class)
     public ResponseEntity<ErrorResponse> handleValidationErrors(

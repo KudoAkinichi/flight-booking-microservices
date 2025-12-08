@@ -15,17 +15,47 @@ Lightweight Java Spring Boot microservices for a flight booking system. This rep
 - [Contributing](#contributing)
 - [Maintainers & license](#maintainers--license)
 
-## What it does
+## Microservice Responsibilities
 
-This project provides a sample flight booking platform implemented as a set of Spring Boot microservices. It includes:
+### 1. Flight Service
 
-- A centralized Config Server for shared configuration
-- A Eureka server for service discovery
-- An API Gateway to route requests
-- A Flight Service for flight inventory and search
-- A Booking Service for creating and managing bookings
+* Add airline
+* Add flight inventory
+* Search flights by date, source, and destination
+* Provide flight details to booking service
+* Maintains available and total seats
 
-The code is organized as Maven modules under the repository root so you can build and run modules independently during development.
+### 2. Booking Service
+
+* Create a booking for a selected flight
+* Validate flight using OpenFeign call
+* Store passenger details
+* Maintain booking history and ticket retrieval
+* Publish a booking-created event to RabbitMQ
+* Handle cancellation (only allowed 24 hours before the journey)
+
+### 3. Eureka Server
+
+* Registers and discovers all running microservices
+* Removes the need to hard-code URLs
+
+### 4. Config Server
+
+* Hosts application configuration (e.g., in Git)
+* All services fetch config from here
+
+### 5. API Gateway
+
+* Routes `/api/v1.0/flight/**` to Flight Service
+* Routes `/api/v1.0/flight/booking/**` to Booking Service
+* Helps in centralized routing and potential future cross-cutting concerns
+
+### 6. RabbitMQ
+
+* Booking service publishes a JSON message whenever a booking is successful
+* Future services (email, SMS, analytics) can consume these messages
+
+---
 
 ## Key features
 

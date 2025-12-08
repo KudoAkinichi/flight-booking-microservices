@@ -1,0 +1,553 @@
+{
+  "info": {
+    "_postman_id": "flight-booking-api-v1",
+    "name": "Flight Booking Microservice API",
+    "description": "Complete API collection for Flight Booking and Management System with Authentication, Public Endpoints, User Bookings, and Admin Operations",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Authentication",
+      "description": "User registration and login endpoints",
+      "item": [
+        {
+          "name": "Register User",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 201) {",
+                  "    var jsonData = pm.response.json();",
+                  "    if (jsonData.token) {",
+                  "        pm.collectionVariables.set('user_token', jsonData.token);",
+                  "        console.log('User registered and token saved');",
+                  "    }",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"user1@example.com\",\n  \"password\": \"password123\",\n  \"fullName\": \"John Doe\",\n  \"role\": \"ROLE_USER\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/auth/register",
+              "host": ["{{base_url}}"],
+              "path": ["auth", "register"]
+            },
+            "description": "Register a new user account with ROLE_USER"
+          },
+          "response": []
+        },
+        {
+          "name": "Register Admin",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 201) {",
+                  "    var jsonData = pm.response.json();",
+                  "    if (jsonData.token) {",
+                  "        pm.collectionVariables.set('admin_token', jsonData.token);",
+                  "        console.log('Admin registered and token saved');",
+                  "    }",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"admin1@example.com\",\n  \"password\": \"admin123\",\n  \"fullName\": \"Admin User\",\n  \"role\": \"ROLE_ADMIN\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/auth/register",
+              "host": ["{{base_url}}"],
+              "path": ["auth", "register"]
+            },
+            "description": "Register a new admin account with ROLE_ADMIN"
+          },
+          "response": []
+        },
+        {
+          "name": "Login User",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200 || pm.response.code === 201) {",
+                  "    var jsonData = pm.response.json();",
+                  "    if (jsonData.token) {",
+                  "        pm.collectionVariables.set('user_token', jsonData.token);",
+                  "        console.log('User token saved to collection variable: user_token');",
+                  "    }",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"user1@example.com\",\n  \"password\": \"password123\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/auth/login",
+              "host": ["{{base_url}}"],
+              "path": ["auth", "login"]
+            },
+            "description": "Login with user credentials and save token automatically"
+          },
+          "response": []
+        },
+        {
+          "name": "Login Admin",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200 || pm.response.code === 201) {",
+                  "    var jsonData = pm.response.json();",
+                  "    if (jsonData.token) {",
+                  "        pm.collectionVariables.set('admin_token', jsonData.token);",
+                  "        console.log('Admin token saved to collection variable: admin_token');",
+                  "    }",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"admin1@example.com\",\n  \"password\": \"admin123\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/auth/login",
+              "host": ["{{base_url}}"],
+              "path": ["auth", "login"]
+            },
+            "description": "Login with admin credentials and save token automatically"
+          },
+          "response": []
+        },
+        {
+          "name": "Auth Health Check",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/auth/ping",
+              "host": ["{{base_url}}"],
+              "path": ["auth", "ping"]
+            },
+            "description": "Check if authentication service is running"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Public Flight Operations",
+      "description": "Public endpoints that don't require authentication",
+      "item": [
+        {
+          "name": "Search Flights",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"from\": \"DEL\",\n  \"to\": \"BOM\",\n  \"date\": \"2025-12-31\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1.0/flight/search",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1.0", "flight", "search"]
+            },
+            "description": "Search for available flights between two cities on a specific date"
+          },
+          "response": []
+        },
+        {
+          "name": "Get All Airlines",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/v1.0/flight/airline/all",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1.0", "flight", "airline", "all"]
+            },
+            "description": "Retrieve list of all available airlines"
+          },
+          "response": []
+        },
+        {
+          "name": "Get Flight by ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/v1.0/flight/:flightId",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1.0", "flight", ":flightId"],
+              "variable": [
+                {
+                  "key": "flightId",
+                  "value": "1",
+                  "description": "Flight ID"
+                }
+              ]
+            },
+            "description": "Get detailed information about a specific flight"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "User Booking Operations",
+      "description": "Booking management endpoints (requires USER or ADMIN token)",
+      "item": [
+        {
+          "name": "Create Booking",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{user_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"emailId\": \"user1@example.com\",\n  \"passengerName\": \"John Doe\",\n  \"seats\": 1\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1.0/flight/booking/:flightId",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1.0", "flight", "booking", ":flightId"],
+              "variable": [
+                {
+                  "key": "flightId",
+                  "value": "1",
+                  "description": "Flight ID to book"
+                }
+              ]
+            },
+            "description": "Create a new flight booking for a specific flight"
+          },
+          "response": []
+        },
+        {
+          "name": "Get Ticket by PNR",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{user_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/v1.0/flight/ticket/:pnr",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1.0", "flight", "ticket", ":pnr"],
+              "variable": [
+                {
+                  "key": "pnr",
+                  "value": "PNR123",
+                  "description": "PNR number"
+                }
+              ]
+            },
+            "description": "Retrieve ticket details using PNR number"
+          },
+          "response": []
+        },
+        {
+          "name": "Get Booking History",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{user_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/v1.0/flight/booking/history/:email",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1.0", "flight", "booking", "history", ":email"],
+              "variable": [
+                {
+                  "key": "email",
+                  "value": "user1@example.com",
+                  "description": "User email address"
+                }
+              ]
+            },
+            "description": "Get all booking history for a specific user email"
+          },
+          "response": []
+        },
+        {
+          "name": "Cancel Booking",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{user_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/v1.0/flight/booking/cancel/:pnr",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1.0", "flight", "booking", "cancel", ":pnr"],
+              "variable": [
+                {
+                  "key": "pnr",
+                  "value": "PNR123",
+                  "description": "PNR number to cancel"
+                }
+              ]
+            },
+            "description": "Cancel a booking using PNR number"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Admin Flight Management",
+      "description": "Admin-only endpoints for managing airlines and inventory (requires ADMIN token)",
+      "item": [
+        {
+          "name": "Add Airline",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{admin_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"airlineName\": \"Air India\",\n  \"code\": \"AI123\",\n  \"contact\": \"9876543210\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1.0/flight/airline/add",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1.0", "flight", "airline", "add"]
+            },
+            "description": "Add a new airline to the system (Admin only)"
+          },
+          "response": []
+        },
+        {
+          "name": "Get Airline by ID",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{admin_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/v1.0/flight/airline/:airlineId",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1.0", "flight", "airline", ":airlineId"],
+              "variable": [
+                {
+                  "key": "airlineId",
+                  "value": "1",
+                  "description": "Airline ID"
+                }
+              ]
+            },
+            "description": "Get specific airline details by ID (Admin only)"
+          },
+          "response": []
+        },
+        {
+          "name": "Add Flight Inventory",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{admin_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"airlineId\": 1,\n  \"from\": \"DEL\",\n  \"to\": \"BOM\",\n  \"date\": \"2025-12-31\",\n  \"availableSeats\": 100,\n  \"price\": 5000\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1.0/flight/airline/inventory/add",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1.0", "flight", "airline", "inventory", "add"]
+            },
+            "description": "Add new flight inventory (Admin only)"
+          },
+          "response": []
+        },
+        {
+          "name": "Modify Flight Seats",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{admin_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"operation\": \"INCREASE\",\n  \"seats\": 10\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1.0/flight/:flightId/seats",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1.0", "flight", ":flightId", "seats"],
+              "variable": [
+                {
+                  "key": "flightId",
+                  "value": "1",
+                  "description": "Flight ID"
+                }
+              ]
+            },
+            "description": "Increase or decrease available seats for a flight (Admin only). Operation can be 'INCREASE' or 'DECREASE'"
+          },
+          "response": []
+        }
+      ]
+    }
+  ],
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://localhost:8069",
+      "type": "string"
+    },
+    {
+      "key": "user_token",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "admin_token",
+      "value": "",
+      "type": "string"
+    }
+  ]
+}

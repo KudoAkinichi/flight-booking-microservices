@@ -25,20 +25,36 @@ spring:
   # Spring Cloud Gateway Configuration
   cloud:
     gateway:
-      # Global CORS Configuration
+      # ============================================================
+      # GLOBAL CORS CONFIGURATION (UPDATED FOR ANGULAR)
+      # ============================================================
       globalcors:
         corsConfigurations:
           '[/**]':
-            allowedOrigins: "*"
+            # Allow Angular app running on localhost:4200
+            allowedOrigins:
+              - "http://localhost:4200"
+            # Allow all standard HTTP methods
             allowedMethods:
               - GET
               - POST
               - PUT
               - DELETE
               - OPTIONS
-            allowedHeaders: "*"
-            allowCredentials: false
+              - PATCH
+            # Allow all headers including Authorization
+            allowedHeaders:
+              - "*"
+            # Allow credentials (cookies, authorization headers)
+            allowCredentials: true
+            # Expose these headers to the frontend
+            exposedHeaders:
+              - Authorization
+              - Content-Type
+            # Cache preflight response for 1 hour
             maxAge: 3600
+        # Important: Add CORS to simple URL handler mapping
+        add-to-simple-url-handler-mapping: true
 
       # Route Configurations
       routes:

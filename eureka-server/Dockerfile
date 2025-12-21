@@ -1,9 +1,21 @@
-FROM maven:3.8.5-openjdk-17
+# ========================
+# BUILD STAGE
+# ========================
+FROM maven:3.8.5-openjdk-17 AS build
+WORKDIR /app
+COPY pom.xml .
+COPY src ./src
+RUN mvn clean package -DskipTests
 
-WORKDIR /eureka-server
+# ========================
+# RUNTIME STAGE
+# ========================
+FROM openjdk:17-jdk-slim
+WORKDIR /app
 
-COPY . .
+ENV SPRING_PROFILES_ACTIVE=prod
 
-RUN mvn clean install -DskipTests
+COPY --from=build /app/target/*.jar app.jar
 
-CMD ["mvn", "spring-boot:run", "-Dmaven.test.skip=true"]
+EXPOSE 8762
+ENTRYPOINT ["java","-jar","app.jar"]

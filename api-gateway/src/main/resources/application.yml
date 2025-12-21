@@ -5,206 +5,39 @@ spring:
   application:
     name: api-gateway
 
-  # Database Configuration
-  datasource:
-    url: jdbc:mysql://localhost:3306/flight_auth_db?createDatabaseIfNotExist=true&useSSL=false&allowPublicKeyRetrieval=true
-    username: root
-    password: root
-    driver-class-name: com.mysql.cj.jdbc.Driver
+  main:
+    web-application-type: reactive
 
-  # JPA Configuration
-  jpa:
-    hibernate:
-      ddl-auto: update
-    show-sql: true
-    properties:
-      hibernate:
-        format_sql: true
-        dialect: org.hibernate.dialect.MySQLDialect
-
-  # Spring Cloud Gateway Configuration
   cloud:
     gateway:
-      # ============================================================
-      # GLOBAL CORS CONFIGURATION (UPDATED FOR ANGULAR)
-      # ============================================================
       globalcors:
-        corsConfigurations:
+        cors-configurations:
           '[/**]':
-            # Allow Angular app running on localhost:4200
-            allowedOrigins:
-              - "http://localhost:4200"
-            # Allow all standard HTTP methods
-            allowedMethods:
-              - GET
-              - POST
-              - PUT
-              - DELETE
-              - OPTIONS
-              - PATCH
-            # Allow all headers including Authorization
-            allowedHeaders:
-              - "*"
-            # Allow credentials (cookies, authorization headers)
-            allowCredentials: true
-            # Expose these headers to the frontend
-            exposedHeaders:
-              - Authorization
-              - Content-Type
-            # Cache preflight response for 1 hour
-            maxAge: 3600
-        # Important: Add CORS to simple URL handler mapping
-        add-to-simple-url-handler-mapping: true
-
-      # Route Configurations
+            allowed-origins: "http://localhost:4200"
+            allowed-methods: "*"
+            allowed-headers: "*"
+            allow-credentials: true
       routes:
-        # ============================================================
-        # PUBLIC ENDPOINTS (No Authentication Required)
-        # ============================================================
-
-        # Search Flights
-        - id: flight-search
-          uri: lb://flight-service
+        - id: auth-service
+          uri: lb://AUTH-SERVICE
           predicates:
-            - Path=/api/v1.0/flight/search
-            - Method=POST
-          filters:
-            - StripPrefix=0
+            - Path=/auth/**
 
-        # Get All Airlines
-        - id: flight-airline-all
-          uri: lb://flight-service
+        - id: flight-service
+          uri: lb://FLIGHT-SERVICE
           predicates:
-            - Path=/api/v1.0/flight/airline/all
-            - Method=GET
-          filters:
-            - StripPrefix=0
+            - Path=/api/v1.0/flight/**
 
-        # Get Flight Details by ID
-        - id: flight-details
-          uri: lb://flight-service
+        - id: booking-service
+          uri: lb://BOOKING-SERVICE
           predicates:
-            - Path=/api/v1.0/flight/{flightId}
-            - Method=GET
-          filters:
-            - StripPrefix=0
+            - Path=/api/v1.0/flight/booking/**
 
-        # ============================================================
-        # ADMIN ONLY ENDPOINTS
-        # ============================================================
-
-        # Add Airline
-        - id: flight-airline-add
-          uri: lb://flight-service
-          predicates:
-            - Path=/api/v1.0/flight/airline/add
-            - Method=POST
-          filters:
-            - name: JwtAuthFilter
-
-        # Get Airline by ID
-        - id: flight-airline-get
-          uri: lb://flight-service
-          predicates:
-            - Path=/api/v1.0/flight/airline/{id}
-            - Method=GET
-          filters:
-            - name: JwtAuthFilter
-
-        # Add Flight Inventory
-        - id: flight-inventory-add
-          uri: lb://flight-service
-          predicates:
-            - Path=/api/v1.0/flight/airline/inventory/add
-            - Method=POST
-          filters:
-            - name: JwtAuthFilter
-
-        # Modify Flight Seats
-        - id: flight-seat-operations
-          uri: lb://flight-service
-          predicates:
-            - Path=/api/v1.0/flight/{flightId}/seats
-            - Method=PUT
-          filters:
-            - name: JwtAuthFilter
-
-        # ============================================================
-        # USER & ADMIN ENDPOINTS (Booking Operations)
-        # ============================================================
-
-        # Create Booking
-        - id: booking-create
-          uri: lb://booking-service
-          predicates:
-            - Path=/api/v1.0/flight/booking/{flightId}
-            - Method=POST
-          filters:
-            - name: JwtAuthFilter
-
-        # Get Ticket by PNR
-        - id: booking-ticket-get
-          uri: lb://booking-service
-          predicates:
-            - Path=/api/v1.0/flight/ticket/{pnr}
-            - Method=GET
-          filters:
-            - name: JwtAuthFilter
-
-        # Get Booking History
-        - id: booking-history
-          uri: lb://booking-service
-          predicates:
-            - Path=/api/v1.0/flight/booking/history/{emailId}
-            - Method=GET
-          filters:
-            - name: JwtAuthFilter
-
-        # Cancel Booking
-        - id: booking-cancel
-          uri: lb://booking-service
-          predicates:
-            - Path=/api/v1.0/flight/booking/cancel/{pnr}
-            - Method=DELETE
-          filters:
-            - name: JwtAuthFilter
-
-      # Default Filters
-      default-filters:
-        - DedupeResponseHeader=Access-Control-Allow-Credentials Access-Control-Allow-Origin
-
-# JWT Configuration
 jwt:
-  secret: "this_is_a_very_long_and_secure_jwt_secret_key_that_should_be_changed_in_production_123456789"
-  expiration-ms: 86400000  # 24 hours in milliseconds
+  secret: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiYWRtaW4iOnRydWUsImlhdCI6MTUxNjIzOTAyMn0.KMUFsIDTnFmyG3nMiGM6H9FNFUROf3wh7SmqJp-QV30
+  expiration-ms: 86400000
 
-# Eureka Client Configuration
 eureka:
   client:
     service-url:
-      defaultZone: http://localhost:8761/eureka/
-    register-with-eureka: true
-    fetch-registry: true
-  instance:
-    prefer-ip-address: true
-    hostname: localhost
-
-# Logging Configuration
-logging:
-  level:
-    root: INFO
-    org.springframework.cloud.gateway: DEBUG
-    org.springframework.web: DEBUG
-    com.flightapp.apigateway: DEBUG
-  pattern:
-    console: "%d{yyyy-MM-dd HH:mm:ss} - %msg%n"
-
-# Actuator Configuration
-management:
-  endpoints:
-    web:
-      exposure:
-        include: health,info,metrics,gateway
-  endpoint:
-    health:
-      show-details: always
+      defaultZone: http://localhost:8762/eureka/

@@ -18,12 +18,12 @@ import com.validator.BookingValidator;
 import com.validator.CancellationValidator;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Schedulers;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -36,7 +36,6 @@ public class BookingServiceImpl implements BookingService {
     private final FlightServiceClient flightServiceClient;
     private final BookingValidator bookingValidator;
     private final CancellationValidator cancellationValidator;
-    private final RabbitTemplate rabbitTemplate;
 
     @Override
     public Mono<BookingResponse> createBooking(BookingRequest request) {
@@ -65,8 +64,6 @@ public class BookingServiceImpl implements BookingService {
                                             .doOnSuccess(v -> {
                                                 log.info("Seats reserved successfully for booking: {}",
                                                         savedBooking.getPnr());
-                                                // Send email notification
-                                                sendBookingConfirmationEmail(savedBooking, flightDto);
                                             })
                                             .publishOn(Schedulers.boundedElastic())
                                             .doOnError(error -> {
@@ -154,11 +151,7 @@ public class BookingServiceImpl implements BookingService {
                             .doOnError(error ->
                                     log.error("Failed to release seats for PNR: {}", pnr))
                             .then(bookingRepository.save(booking))
-                            .map(cancelledBooking -> buildCancellationResponse(cancelledBooking, refundAmount))
-                            .doOnSuccess(response -> {
-                                log.info("Booking cancelled successfully: {}", pnr);
-                                sendCancellationEmail(booking, refundAmount);
-                            });
+                            .map(cancelledBooking -> buildCancellationResponse(cancelledBooking, refundAmount));
                 })
                 .doOnError(error ->
                         log.error("Error cancelling booking: {}", error.getMessage()));
@@ -219,7 +212,7 @@ public class BookingServiceImpl implements BookingService {
         double baseFare = flight.getBaseFare() * seatNumbers.size();
 
         // Simplified seat charges estimation
-        double estimatedSeatCharges = seatNumbers.size() * 200; // Average charge
+        double estimatedSeatCharges = 200 * seatNumbers.size(); // Average charge
 
         return baseFare + estimatedSeatCharges;
     }
@@ -237,99 +230,22 @@ public class BookingServiceImpl implements BookingService {
                 .build();
     }
 
-    /**
-     * Send booking confirmation email via RabbitMQ
-     */
-    private void sendBookingConfirmationEmail(Booking booking, FlightDetailsDto flight) {
-        try {
-            EmailMessage message = EmailMessage.builder()
-                    .to(booking.getContactEmail())
-                    .subject("Booking Confirmation - PNR: " + booking.getPnr())
-                    .body(buildBookingEmailBody(booking, flight))
-                    .type("BOOKING_CONFIRMATION")
-                    .build();
-
-            rabbitTemplate.convertAndSend("booking-exchange", "booking.created", message);
-            log.info("Booking confirmation email queued for: {}", booking.getContactEmail());
-        } catch (Exception e) {
-            log.error("Failed to send booking confirmation email: {}", e.getMessage());
-        }
-    }
-
-    /**
-     * Send cancellation email via RabbitMQ
-     */
-    private void sendCancellationEmail(Booking booking, double refundAmount) {
-        try {
-            EmailMessage message = EmailMessage.builder()
-                    .to(booking.getContactEmail())
-                    .subject("Booking Cancellation - PNR: " + booking.getPnr())
-                    .body(buildCancellationEmailBody(booking, refundAmount))
-                    .type("BOOKING_CANCELLATION")
-                    .build();
-
-            rabbitTemplate.convertAndSend("booking-exchange", "booking.cancelled", message);
-            log.info("Cancellation email queued for: {}", booking.getContactEmail());
-        } catch (Exception e) {
-            log.error("Failed to send cancellation email: {}", e.getMessage());
-        }
-    }
-
-    private String buildBookingEmailBody(Booking booking, FlightDetailsDto flight) {
-        return String.format(
-                "Dear %s,\n\n" +
-                        "Your flight booking has been confirmed!\n\n" +
-                        "PNR: %s\n" +
-                        "Flight: %s\n" +
-                        "Route: %s\n" +
-                        "Departure: %s\n" +
-                        "Seats: %s\n" +
-                        "Total Fare: %s %.2f\n\n" +
-                        "Thank you for booking with us!\n\n" +
-                        "Best regards,\n" +
-                        "Flight Booking Team",
-                booking.getContactName(),
-                booking.getPnr(),
-                booking.getFlightNumber(),
-                booking.getRoute(),
-                booking.getJourneyDate(),
-                String.join(", ", booking.getSeatNumbers()),
-                booking.getCurrency(),
-                booking.getTotalFare()
-        );
-    }
-
-    private String buildCancellationEmailBody(Booking booking, double refundAmount) {
-        return String.format(
-                "Dear %s,\n\n" +
-                        "Your booking has been cancelled.\n\n" +
-                        "PNR: %s\n" +
-                        "Flight: %s\n" +
-                        "Refund Amount: %s %.2f\n\n" +
-                        "The refund will be processed within 7-10 business days.\n\n" +
-                        "Best regards,\n" +
-                        "Flight Booking Team",
-                booking.getContactName(),
-                booking.getPnr(),
-                booking.getFlightNumber(),
-                booking.getCurrency(),
-                refundAmount
-        );
-    }
 
     /**
      * Convert to BookingResponse
      */
     private BookingResponse convertToBookingResponse(Booking booking) {
-        List<PassengerInfo> passengerInfos = booking.getPassengers().stream()
-                .map(p -> PassengerInfo.builder()
-                        .name(p.getName())
-                        .gender(p.getGender())
-                        .age(p.getAge())
-                        .seatNumber(p.getSeatNumber())
-                        .mealPreference(p.getMealPreference())
-                        .build())
-                .collect(Collectors.toList());
+        List<PassengerInfo> passengerInfos = new ArrayList<>();
+        for (Passenger p : booking.getPassengers()) {
+            PassengerInfo build = PassengerInfo.builder()
+                    .name(p.getName())
+                    .gender(p.getGender())
+                    .age(p.getAge())
+                    .seatNumber(p.getSeatNumber())
+                    .mealPreference(p.getMealPreference())
+                    .build();
+            passengerInfos.add(build);
+        }
 
         return BookingResponse.builder()
                 .bookingId(booking.getId())
@@ -350,15 +266,17 @@ public class BookingServiceImpl implements BookingService {
     }
 
     private BookingResponse convertToBookingResponseWithoutFlightDetails(Booking booking) {
-        List<PassengerInfo> passengerInfos = booking.getPassengers().stream()
-                .map(p -> PassengerInfo.builder()
-                        .name(p.getName())
-                        .gender(p.getGender())
-                        .age(p.getAge())
-                        .seatNumber(p.getSeatNumber())
-                        .mealPreference(p.getMealPreference())
-                        .build())
-                .collect(Collectors.toList());
+        List<PassengerInfo> passengerInfos = new ArrayList<>();
+        for (Passenger p : booking.getPassengers()) {
+            PassengerInfo build = PassengerInfo.builder()
+                    .name(p.getName())
+                    .gender(p.getGender())
+                    .age(p.getAge())
+                    .seatNumber(p.getSeatNumber())
+                    .mealPreference(p.getMealPreference())
+                    .build();
+            passengerInfos.add(build);
+        }
 
         return BookingResponse.builder()
                 .bookingId(booking.getId())
@@ -404,15 +322,17 @@ public class BookingServiceImpl implements BookingService {
                 .journeyDate(booking.getJourneyDate())
                 .build();
 
-        List<PassengerInfo> passengers = booking.getPassengers().stream()
-                .map(p -> PassengerInfo.builder()
-                        .name(p.getName())
-                        .gender(p.getGender())
-                        .age(p.getAge())
-                        .seatNumber(p.getSeatNumber())
-                        .mealPreference(p.getMealPreference())
-                        .build())
-                .collect(Collectors.toList());
+        List<PassengerInfo> passengers = new ArrayList<>();
+        for (Passenger p : booking.getPassengers()) {
+            PassengerInfo build = PassengerInfo.builder()
+                    .name(p.getName())
+                    .gender(p.getGender())
+                    .age(p.getAge())
+                    .seatNumber(p.getSeatNumber())
+                    .mealPreference(p.getMealPreference())
+                    .build();
+            passengers.add(build);
+        }
 
         FareBreakdown fareBreakdown = FareBreakdown.builder()
                 .baseFare(flight.getBaseFare() * booking.getPassengers().size())
@@ -443,15 +363,17 @@ public class BookingServiceImpl implements BookingService {
                 .journeyDate(booking.getJourneyDate())
                 .build();
 
-        List<PassengerInfo> passengers = booking.getPassengers().stream()
-                .map(p -> PassengerInfo.builder()
-                        .name(p.getName())
-                        .gender(p.getGender())
-                        .age(p.getAge())
-                        .seatNumber(p.getSeatNumber())
-                        .mealPreference(p.getMealPreference())
-                        .build())
-                .collect(Collectors.toList());
+        List<PassengerInfo> passengers = new ArrayList<>();
+        for (Passenger p : booking.getPassengers()) {
+            PassengerInfo build = PassengerInfo.builder()
+                    .name(p.getName())
+                    .gender(p.getGender())
+                    .age(p.getAge())
+                    .seatNumber(p.getSeatNumber())
+                    .mealPreference(p.getMealPreference())
+                    .build();
+            passengers.add(build);
+        }
 
         FareBreakdown fareBreakdown = FareBreakdown.builder()
                 .totalFare(booking.getTotalFare())

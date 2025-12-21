@@ -104,4 +104,22 @@ public class FlightController {
                                 .build()
                 )));
     }
+
+    @PostMapping
+    @Operation(summary = "Create new flight (Admin only)")
+    public Mono<ResponseEntity<ApiResponse<Object>>> createFlight(
+            @Valid @RequestBody CreateFlightRequest request
+    ) {
+        log.info("Admin creating flight {}", request.getFlightNumber());
+
+        return flightService.createFlight(request)
+                .map(savedFlight ->
+                        ResponseEntity.status(HttpStatus.CREATED)
+                                .body(ApiResponse.success(
+                                        "Flight created successfully",
+                                        savedFlight
+                                ))
+                );
+    }
+
 }

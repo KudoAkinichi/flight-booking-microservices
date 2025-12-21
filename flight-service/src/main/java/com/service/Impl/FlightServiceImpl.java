@@ -13,6 +13,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+import com.dto.request.CreateFlightRequest;
+
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -152,4 +154,44 @@ public class FlightServiceImpl implements FlightService {
                 })
                 .then();
     }
+
+    @Override
+    public Mono<Flight> createFlight(CreateFlightRequest request) {
+
+        return flightRepository
+                .existsByFlightNumberAndDepartureDateTime(
+                        request.getFlightNumber(),
+                        request.getDepartureDateTime()
+                )
+                .flatMap(exists -> {
+                    if (exists) {
+                        return Mono.error(
+                                new IllegalArgumentException(
+                                        "Flight already exists for given date and time"
+                                )
+                        );
+                    }
+
+                    Flight flight = Flight.builder()
+                            .flightNumber(request.getFlightNumber())
+                            .airlineCode(request.getAirlineCode())
+                            .airlineName(request.getAirlineName())
+                            .airlineLogoUrl(request.getAirlineLogoUrl())
+                            .origin(request.getOrigin().toUpperCase())
+                            .destination(request.getDestination().toUpperCase())
+                            .departureDateTime(request.getDepartureDateTime())
+                            .arrivalDateTime(request.getArrivalDateTime())
+                            .availableSeats(request.getTotalSeats())
+                            .totalSeats(request.getTotalSeats())
+                            .baseFare(request.getBaseFare())
+                            .currency(request.getCurrency())
+                            .aircraftType(request.getAircraftType())
+                            .createdAt(DateTimeUtil.getCurrentTimestamp())
+                            .updatedAt(DateTimeUtil.getCurrentTimestamp())
+                            .build();
+
+                    return flightRepository.save(flight);
+                });
+    }
+
 }

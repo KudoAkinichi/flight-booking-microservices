@@ -1,5 +1,6 @@
 package com.service;
 
+import com.dto.request.CreateFlightRequest;
 import com.dto.request.FlightSearchRequest;
 import com.dto.response.FlightSearchResponse;
 import com.model.Flight;
@@ -15,4 +16,7 @@ public interface FlightService {
     Mono<Flight> updateFlightSeats(String flightId, int seatsToBook);
     Mono<Void> reserveSeats(String flightId, List<String> seatNumbers);
     Mono<Void> releaseSeats(String flightId, List<String> seatNumbers);
+    Mono<Flight> createFlight(CreateFlightRequest request);
+
+    Mono<Flight> createFlight(CreateFlightRequest request);
 }

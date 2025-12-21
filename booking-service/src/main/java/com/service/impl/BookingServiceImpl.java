@@ -7,7 +7,6 @@ import com.dto.response.*;
 import com.exception.BookingNotFoundException;
 import com.exception.ServiceUnavailableException;
 import com.model.Booking;
-import com.model.EmailMessage;
 import com.model.Passenger;
 import com.repository.BookingRepository;
 import com.service.BookingService;
@@ -404,4 +403,15 @@ public class BookingServiceImpl implements BookingService {
                 .cancellationReason(booking.getCancellationReason())
                 .build();
     }
+
+    @Override
+    public Flux<BookingResponse> getMyBookings(String email) {
+        log.info("Fetching bookings for authenticated user: {}", email);
+
+        return bookingRepository
+                .findByContactEmailOrderByBookingDateTimeDesc(email.toLowerCase())
+                .map(this::convertToBookingResponse)
+                .switchIfEmpty(Flux.empty());
+    }
+
 }

@@ -12,4 +12,6 @@ public interface BookingService {
     Mono<TicketResponse> getBookingByPnr(String pnr);
     Flux<BookingResponse> getBookingHistory(String email);
     Mono<CancellationResponse> cancelBooking(String pnr);
+
+    Flux<BookingResponse> getMyBookings(String email);
 }

@@ -117,4 +117,37 @@ public class BookingController {
                         ApiResponse.success(message, null)
                 ));
     }
+
+    @GetMapping("/my")
+    @Operation(
+            summary = "Get my bookings",
+            description = "Retrieve bookings for the currently logged-in user"
+    )
+    public Mono<ResponseEntity<ApiResponse<List<BookingResponse>>>> getMyBookings(
+            @RequestHeader("X-User-Email") String email
+    ) {
+        log.info("Fetching bookings for logged-in user: {}", email);
+
+        return bookingService.getMyBookings(email)
+                .collectList()
+                .map(bookings -> {
+                    if (bookings.isEmpty()) {
+                        return ResponseEntity
+                                .status(HttpStatus.NOT_FOUND)
+                                .body(ApiResponse.<List<BookingResponse>>builder()
+                                        .success(false)
+                                        .message("No bookings found for your account")
+                                        .data(bookings)
+                                        .build());
+                    }
+
+                    return ResponseEntity.ok(
+                            ApiResponse.success(
+                                    "Your bookings retrieved successfully",
+                                    bookings
+                            )
+                    );
+                });
+    }
+
 }

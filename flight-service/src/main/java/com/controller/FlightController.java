@@ -1,5 +1,6 @@
 package com.controller;
 
+import com.dto.request.CreateFlightRequest;
 import com.dto.request.FlightSearchRequest;
 import com.dto.response.ApiResponse;
 import com.dto.response.FlightSearchResponse;

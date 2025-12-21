@@ -17,6 +17,4 @@ public interface FlightService {
     Mono<Void> reserveSeats(String flightId, List<String> seatNumbers);
     Mono<Void> releaseSeats(String flightId, List<String> seatNumbers);
     Mono<Flight> createFlight(CreateFlightRequest request);
-
-    Mono<Flight> createFlight(CreateFlightRequest request);
 }
